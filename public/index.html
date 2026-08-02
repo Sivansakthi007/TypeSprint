@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="TypeSprint - AI-powered Typing Practice, Typing Race & Multiplayer Platform. Boost your typing speed and accuracy.">
+    <meta name="theme-color" content="#1a1c23">
+    <title>TypeSprint | Premium Typing Platform</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS Style Sheet -->
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- CDNs for visual assets and calculations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="glass-dark font-inter">
+    
+    <!-- Splash Loading Overlay -->
+    <div id="splash-screen" class="splash-overlay">
+        <div class="splash-content">
+            <div class="animated-logo-container">
+                <span class="logo-txt gradient-text font-outfit text-4xl font-bold">⚡ TypeSprint</span>
+            </div>
+            <p class="splash-subtitle">Initializing AI typing engine...</p>
+            <div class="splash-loader-track">
+                <div class="splash-loader-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Main Navigation Header -->
+    <header class="navbar glassmorphism">
+        <div class="nav-brand" id="nav-brand-logo">
+            <span class="logo-icon">⚡</span>
+            <span class="logo-name font-outfit">TypeSprint</span>
+        </div>
+        <nav class="nav-links">
+            <a href="#" class="nav-item active" data-target="home-section">Home</a>
+            <a href="#" class="nav-item" data-target="practice-section">Practice</a>
+            <a href="#" class="nav-item" data-target="race-section">AI Race</a>
+            <a href="#" class="nav-item" data-target="multiplayer-section">Multiplayer</a>
+            <a href="#" class="nav-item" data-target="leaderboard-section">Leaderboard</a>
+            <a href="#" class="nav-item" data-target="shop-section">Shop</a>
+            <a href="#" class="nav-item" data-target="social-section">Social</a>
+            <a href="#" class="nav-item" data-target="profile-section">Dashboard</a>
+            <a href="#" class="nav-item admin-only hidden" data-target="admin-section">Admin</a>
+        </nav>
+        <div class="nav-actions">
+            <!-- Settings trigger -->
+            <button id="btn-settings-toggle" class="btn-icon" title="Settings">⚙️</button>
+            
+            <!-- Auth Actions -->
+            <div id="auth-nav-guest" class="auth-group">
+                <button id="btn-show-login" class="btn-primary-glow font-outfit">Sign In</button>
+            </div>
+            <div id="auth-nav-user" class="auth-group hidden">
+                <div class="user-pill" id="user-profile-trigger">
+                    <img id="nav-user-avatar" src="/assets/images/avatar-default.svg" alt="Avatar" class="avatar-sm">
+                    <span id="nav-user-name" class="username-txt">Username</span>
+                    <span id="nav-user-level" class="level-badge">Lv.1</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Side Configuration Drawer -->
+    <aside id="settings-drawer" class="drawer glassmorphism">
+        <div class="drawer-header">
+            <h3>Configuration Options</h3>
+            <button id="btn-settings-close" class="btn-close">&times;</button>
+        </div>
+        <div class="drawer-body">
+            <div class="settings-group">
+                <label>Aesthetic Theme</label>
+                <select id="setting-theme" class="select-glass">
+                    <option value="glass-dark">Glass Dark (Default)</option>
+                    <option value="glass-light">Glass Light</option>
+                    <option value="theme-carbon">Carbon Dark</option>
+                    <option value="theme-neon">Neon Cyberpunk</option>
+                    <option value="theme-sakura">Sakura Blossom</option>
+                    <option value="theme-forest">Mossy Forest</option>
+                    <option value="theme-sunset">Sunset Glow</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <label>Typing Font Family</label>
+                <select id="setting-font-family" class="select-glass">
+                    <option value="Inter, sans-serif">Inter Sans</option>
+                    <option value="Outfit, sans-serif">Outfit</option>
+                    <option value="'Fira Code', monospace">Fira Code (Monospace)</option>
+                    <option value="Courier New, monospace">Courier New</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <label>Text Font Size</label>
+                <select id="setting-font-size" class="select-glass">
+                    <option value="1.25rem">Small (20px)</option>
+                    <option value="1.5rem" selected>Medium (24px)</option>
+                    <option value="1.8rem">Large (28px)</option>
+                    <option value="2.2rem">Extra Large (35px)</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <label>Cursor Style</label>
+                <select id="setting-cursor" class="select-glass">
+                    <option value="line-blink">Blinking Line</option>
+                    <option value="line-pulse">Pulsing Line</option>
+                    <option value="block-solid">Solid Block</option>
+                    <option value="cursor-underline">Underline</option>
+                </select>
+            </div>
+            <div class="settings-group">
+                <label>Keyboard Sound Effects</label>
+                <select id="setting-sound" class="select-glass">
+                    <option value="none">Mute</option>
+                    <option value="mechanical" selected>Mechanical Keyboard</option>
+                    <option value="bubble">Bubble Click</option>
+                    <option value="laser">Sci-Fi Laser</option>
+                </select>
+            </div>
+            <div class="settings-group checkbox-group">
+                <input type="checkbox" id="setting-volume" checked>
+                <label for="setting-volume">Sound Effects Active</label>
+            </div>
+            <div class="settings-group checkbox-group">
+                <input type="checkbox" id="setting-animations" checked>
+                <label for="setting-animations">Dynamic UI Animations</label>
+            </div>
+            <div class="settings-group checkbox-group">
+                <input type="checkbox" id="setting-auto-next">
+                <label for="setting-auto-next">Auto Next Game on Completion</label>
+            </div>
+            <button id="btn-save-settings" class="btn-primary w-full">Save Changes</button>
+        </div>
+    </aside>
+
+    <!-- Main View Section Container -->
+    <main id="app-view-container" class="main-content">
+
+        <!-- 1. HOME SCREEN SECTION -->
+        <section id="home-section" class="view-section active">
+            <div class="hero-container">
+                <div class="hero-text-side">
+                    <div class="promo-badge">⚡ AI-Powered Adaptive Typing</div>
+                    <h1 class="hero-title font-outfit">Slam the keys, Track your speed, Race the <span class="gradient-text font-bold">Sprint</span>.</h1>
+                    <p class="hero-description">
+                        Practice offline, challenge intelligent adaptive AI bots, and compete in real-time online multiplayer lobbies. The absolute typing experience, styled with an immersive glass interface.
+                    </p>
+                    <div class="hero-cta-group">
+                        <button class="btn-primary-glow btn-hero-start" data-target="practice-section">Start Practice</button>
+                        <button class="btn-secondary btn-hero-race" data-target="race-section">Race AI Opponent</button>
+                    </div>
+                </div>
+                <div class="hero-graphic-side">
+                    <div class="typing-demo-glass">
+                        <div class="demo-header">
+                            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+                            <span class="demo-title">Typesprint Demo Running...</span>
+                        </div>
+                        <div class="demo-body font-fira">
+                            <p class="demo-text">
+                                <span class="char correct">T</span><span class="char correct">h</span><span class="char correct">e</span>
+                                <span class="char correct"> </span><span class="char correct">f</span><span class="char correct">a</span><span class="char correct">s</span><span class="char correct">t</span><span class="char correct">e</span><span class="char correct">s</span><span class="char correct">t</span>
+                                <span class="char correct"> </span><span class="char wrong">k</span><span class="char wrong">a</span><span class="char correct-fix">e</span><span class="char correct">y</span><span class="char correct">b</span><span class="char correct">o</span><span class="char correct">a</span><span class="char correct">r</span><span class="char correct">d</span>
+                                <span class="char active cursor-line-pulse"> </span><span>s</span><span>p</span><span>r</span><span>i</span><span>n</span><span>t</span><span>e</span><span>r</span><span>.</span>
+                            </p>
+                        </div>
+                        <div class="demo-metrics">
+                            <div class="metric-card-sm">WPM: <span class="highlight-val">122</span></div>
+                            <div class="metric-card-sm">Acc: <span class="highlight-val">98.2%</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Cards List -->
+            <div class="home-features">
+                <div class="feat-card glassmorphism">
+                    <span class="feat-icon">🤖</span>
+                    <h3>Adaptive AI</h3>
+                    <p>Race an AI driver that adapts its typing speed dynamically based on your running performance.</p>
+                </div>
+                <div class="feat-card glassmorphism">
+                    <span class="feat-icon">👥</span>
+                    <h3>Real-time Multiplayer</h3>
+                    <p>Host private lobbies via invite codes or join matchmaking to prove your typing speed globally.</p>
+                </div>
+                <div class="feat-card glassmorphism">
+                    <span class="feat-icon">📊</span>
+                    <h3>Rich Performance Metrics</h3>
+                    <p>Evaluate your finger patterns with interactive heatmaps, speed over time charts, and replay reviews.</p>
+                </div>
+                <div class="feat-card glassmorphism">
+                    <span class="feat-icon">🛒</span>
+                    <h3>Shop Customizations</h3>
+                    <p>Unlock color palettes, mechanical keysounds, badges, and custom indicators with game typing coins.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. PRACTICE MODE SECTION -->
+        <section id="practice-section" class="view-section">
+            <div class="game-control-bar glassmorphism">
+                <div class="mode-tabs">
+                    <button class="mode-btn active" data-mode="words">Random Words</button>
+                    <button class="mode-btn" data-mode="quote">Quotes</button>
+                    <button class="mode-btn" data-mode="code">Programming</button>
+                    <button class="mode-btn" data-mode="custom">Custom Text</button>
+                </div>
+                <div class="sub-options" id="sub-options-words">
+                    <button class="opt-btn active" data-val="10">10 Words</button>
+                    <button class="opt-btn" data-val="25">25 Words</button>
+                    <button class="opt-btn" data-val="50">50 Words</button>
+                    <button class="opt-btn" data-val="100">100 Words</button>
+                </div>
+                <div class="sub-options hidden" id="sub-options-quotes">
+                    <button class="opt-btn" data-val="easy">Easy Quotes</button>
+                    <button class="opt-btn active" data-val="medium">Medium Quotes</button>
+                    <button class="opt-btn" data-val="hard">Hard Quotes</button>
+                </div>
+                <div class="sub-options hidden" id="sub-options-code">
+                    <button class="opt-btn active" data-val="javascript">JavaScript</button>
+                    <button class="opt-btn" data-val="python">Python</button>
+                    <button class="opt-btn" data-val="html">HTML</button>
+                    <button class="opt-btn" data-val="css">CSS</button>
+                    <button class="opt-btn" data-val="sql">SQL</button>
+                </div>
+                <div class="sub-options hidden" id="sub-options-custom">
+                    <button id="btn-custom-trigger" class="btn-secondary">Insert Custom Text</button>
+                </div>
+            </div>
+
+            <!-- Custom Text Modal Input -->
+            <div id="custom-text-modal" class="modal-overlay hidden">
+                <div class="modal-card glassmorphism">
+                    <h3>Custom Practice Session</h3>
+                    <textarea id="custom-text-input" placeholder="Type or paste your text here..." rows="6" class="textarea-glass"></textarea>
+                    <div class="modal-actions">
+                        <button id="btn-cancel-custom" class="btn-secondary">Cancel</button>
+                        <button id="btn-start-custom" class="btn-primary">Load & Start</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Live Stats Banners -->
+            <div class="live-metrics-panel">
+                <div class="live-metric">
+                    <span class="metric-label">WPM</span>
+                    <span id="live-wpm" class="metric-val">00</span>
+                </div>
+                <div class="live-metric">
+                    <span class="metric-label">Accuracy</span>
+                    <span id="live-acc" class="metric-val">100%</span>
+                </div>
+                <div class="live-metric">
+                    <span class="metric-label">Time Remaining</span>
+                    <span id="live-timer" class="metric-val">--</span>
+                </div>
+                <div class="live-metric">
+                    <span class="metric-label">Errors</span>
+                    <span id="live-errors" class="metric-val text-red">0</span>
+                </div>
+            </div>
+
+            <!-- Game Typing Arena Box -->
+            <div class="typing-container-card glassmorphism" id="practice-typing-arena">
+                <div class="typing-focus-hint">Click inside this field to start typing...</div>
+                <div class="typing-text-wrapper font-fira" id="typing-text-target">
+                    <!-- Dynamic spans injected by game.js -->
+                </div>
+                <input type="text" id="hidden-typer" class="hidden-input-element" autocomplete="off" autofocus>
+            </div>
+
+            <div class="arena-footer">
+                <button id="btn-reset-arena" class="btn-secondary btn-icon-text">🔄 Reset Typing Session</button>
+                <div class="shortcuts-legend">Press <kbd>Esc</kbd> to restart.</div>
+            </div>
+
+            <!-- RESULTS INTERACTION CONTAINER -->
+            <div id="result-summary-card" class="result-summary-card glassmorphism hidden">
+                <h2 class="result-title gradient-text font-outfit">Practice Completed!</h2>
+                
+                <div class="results-grid">
+                    <div class="result-metric">
+                        <span class="res-num" id="res-wpm">0</span>
+                        <span class="res-lbl">Words Per Minute</span>
+                    </div>
+                    <div class="result-metric">
+                        <span class="res-num" id="res-acc">0%</span>
+                        <span class="res-lbl">Accuracy</span>
+                    </div>
+                    <div class="result-metric">
+                        <span class="res-num" id="res-cpm">0</span>
+                        <span class="res-lbl">Characters Per Min</span>
+                    </div>
+                    <div class="result-metric">
+                        <span class="res-num" id="res-time">0s</span>
+                        <span class="res-lbl">Time Elapsed</span>
+                    </div>
+                </div>
+
+                <!-- Reward unlocks banner (XP, Coins) -->
+                <div id="reward-claims-banner" class="rewards-earned-banner hidden">
+                    <span id="reward-xp-earned">XP +00</span>
+                    <span id="reward-coins-earned">🪙 +00</span>
+                </div>
+
+                <!-- Graphical details tabs -->
+                <div class="results-charts-container">
+                    <div class="chart-tab">
+                        <h4>Speed & Accuracy Over Run</h4>
+                        <canvas id="run-speed-chart" height="120"></canvas>
+                    </div>
+                </div>
+
+                <div class="results-replays-controls">
+                    <button id="btn-run-replay" class="btn-primary">▶ Watch Typing Replay</button>
+                    <button id="btn-close-results" class="btn-secondary">Practice Again</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. AI RACE SECTION -->
+        <section id="race-section" class="view-section">
+            <div class="race-setup-bar glassmorphism">
+                <div class="setup-group">
+                    <label>AI Opponent Level</label>
+                    <select id="race-ai-difficulty" class="select-glass">
+                        <option value="easy">Easy (25 WPM)</option>
+                        <option value="medium" selected>Medium (50 WPM)</option>
+                        <option value="hard">Hard (75 WPM)</option>
+                        <option value="expert">Expert (100 WPM)</option>
+                        <option value="impossible">Impossible (135 WPM)</option>
+                        <option value="adaptive">Adaptive AI (Matches Your Average)</option>
+                    </select>
+                </div>
+                <div class="setup-group">
+                    <label>Practice Mode Theme</label>
+                    <select id="race-text-mode" class="select-glass">
+                        <option value="words">Random Words Mode</option>
+                        <option value="quote" selected>Quotes Mode</option>
+                    </select>
+                </div>
+                <button id="btn-start-ai-race" class="btn-primary-glow font-outfit">Start AI Race</button>
+            </div>
+
+            <!-- Race track animation field -->
+            <div class="race-track-card glassmorphism">
+                <!-- Track 1: Player Lane -->
+                <div class="race-lane" id="lane-player">
+                    <div class="lane-header">
+                        <span class="lane-runner-name">🧑 You (Player)</span>
+                        <span id="lane-player-wpm" class="lane-wpm-txt">0 WPM</span>
+                    </div>
+                    <div class="lane-line">
+                        <div id="runner-player" class="runner-avatar">🏃</div>
+                    </div>
+                </div>
+                <!-- Track 2: AI Lane -->
+                <div class="race-lane" id="lane-ai">
+                    <div class="lane-header">
+                        <span class="lane-runner-name" id="ai-opponent-avatar-name">🤖 AI (Level: Medium)</span>
+                        <span id="lane-ai-wpm" class="lane-wpm-txt">0 WPM</span>
+                    </div>
+                    <div class="lane-line">
+                        <div id="runner-ai" class="runner-avatar">🤖</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Countdown screen -->
+            <div id="race-countdown-overlay" class="race-countdown-screen hidden">
+                <span id="race-countdown-number" class="countdown-val">3</span>
+                <p>Prepare to Sprint...</p>
+            </div>
+
+            <!-- Core typing area (tied dynamically to current game engines) -->
+            <div id="race-typing-arena-wrapper" class="hidden">
+                <!-- Visual Stats banner -->
+                <div class="live-metrics-panel">
+                    <div class="live-metric"><span class="metric-label">WPM</span><span id="race-live-wpm" class="metric-val">0</span></div>
+                    <div class="live-metric"><span class="metric-label">Accuracy</span><span id="race-live-acc" class="metric-val">100%</span></div>
+                    <div class="live-metric"><span class="metric-label">Time Remaining</span><span id="race-live-timer" class="metric-val">--</span></div>
+                </div>
+                <div class="typing-container-card glassmorphism">
+                    <div class="typing-text-wrapper font-fira" id="race-typing-text-target"></div>
+                    <input type="text" id="race-hidden-typer" class="hidden-input-element" autocomplete="off">
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. MULTIPLAYER RACE SECTION -->
+        <section id="multiplayer-section" class="view-section">
+            <div class="multiplayer-lobby-grid">
+                
+                <!-- Left Hand Lobby Control -->
+                <div class="lobby-control-side glassmorphism">
+                    <h2 class="font-outfit gradient-text">Multiplayer Arena</h2>
+                    <p class="lobby-intro">Race against real players in typing sprints.</p>
+                    
+                    <div class="lobby-action-buttons">
+                        <button id="btn-multi-matchmaking" class="btn-primary-glow w-full">Quick Play (Public Match)</button>
+                        <hr class="lobby-divider">
+                        <button id="btn-multi-create" class="btn-secondary w-full">Create Private Room</button>
+                        
+                        <div class="join-room-input-group">
+                            <input type="text" id="input-room-code" placeholder="Enter Room Code" class="input-glass">
+                            <button id="btn-multi-join" class="btn-primary">Join</button>
+                        </div>
+                    </div>
+
+                    <!-- Queue status indicators -->
+                    <div id="matchmaking-status-card" class="matchmaking-search-card hidden">
+                        <div class="loader-pulse"></div>
+                        <p id="matchmaking-status-text">Searching for active typing matches...</p>
+                        <button id="btn-cancel-matchmaking" class="btn-danger w-full">Cancel Search</button>
+                    </div>
+                </div>
+
+                <!-- Right Hand Lobby Room View -->
+                <div class="lobby-room-side glassmorphism" id="lobby-room-details">
+                    <div class="lobby-placeholder-view">
+                        <span class="placeholder-art">🏁</span>
+                        <h3>No Active Room</h3>
+                        <p>Create a room or start quick play matchmaking to begin.</p>
+                    </div>
+                    
+                    <!-- Active Room Interface -->
+                    <div id="active-room-interface" class="active-room-interface hidden">
+                        <div class="room-header-bar">
+                            <h3>Room: <span id="room-code-label" class="gradient-text font-bold">XXXXXX</span></h3>
+                            <button id="btn-toggle-ready" class="btn-primary">Ready Up</button>
+                        </div>
+
+                        <!-- Opponent race indicators -->
+                        <div class="multiplayer-runners-list" id="multiplayer-runners">
+                            <!-- Injected dynamically by multiplayer.js -->
+                        </div>
+
+                        <!-- Typing input area inside lobby -->
+                        <div id="multi-typing-arena-wrapper" class="hidden">
+                            <div class="typing-container-card text-arena-mp font-fira" id="multi-typing-target">
+                                <!-- Dynamic texts here -->
+                            </div>
+                            <input type="text" id="multi-hidden-typer" class="hidden-input-element" autocomplete="off">
+                            <div class="mp-live-wpm-label">Your WPM: <span id="mp-my-wpm">0</span></div>
+                        </div>
+
+                        <!-- In-room Chat panel -->
+                        <div class="room-chat-panel">
+                            <div class="chat-logs" id="room-chat-logs"></div>
+                            <div class="chat-input-wrapper">
+                                <input type="text" id="input-room-chat" placeholder="Type a message..." class="input-glass">
+                                <button id="btn-send-room-chat" class="btn-primary">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. GLOBAL LEADERBOARD SECTION -->
+        <section id="leaderboard-section" class="view-section">
+            <div class="leaderboard-container glassmorphism">
+                <div class="leaderboard-header">
+                    <h2 class="font-outfit gradient-text">Global Leaderboards</h2>
+                    <div class="leaderboard-filters">
+                        <button class="lead-filter active" data-metric="xp">Total XP</button>
+                        <button class="lead-filter" data-metric="wpm">Highest WPM</button>
+                    </div>
+                </div>
+                
+                <div class="leaderboard-table-wrapper">
+                    <table class="leaderboard-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>User</th>
+                                <th>Typing Level</th>
+                                <th>Peak Speed (WPM)</th>
+                                <th>Accumulated XP</th>
+                                <th>Region</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-rows-target">
+                            <!-- Injected dynamically by app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. SHOP SECTION -->
+        <section id="shop-section" class="view-section">
+            <div class="shop-inventory-header glassmorphism">
+                <div class="coin-display">
+                    <span>Your Balance:</span>
+                    <span id="shop-user-coins" class="coin-amount">🪙 000</span>
+                </div>
+                <div class="shop-filter-tabs">
+                    <button class="shop-filter active" data-cat="theme">Color Themes</button>
+                    <button class="shop-filter" data-cat="cursor">Cursors</button>
+                    <button class="shop-filter" data-cat="badge">Profile Badges</button>
+                </div>
+            </div>
+
+            <div class="shop-grid" id="shop-items-catalog">
+                <!-- Injected dynamically by shop.js -->
+            </div>
+        </section>
+
+        <!-- 7. SOCIAL FEATURES SECTION -->
+        <section id="social-section" class="view-section">
+            <div class="social-layout-grid">
+                
+                <!-- Friends List Sidebar -->
+                <div class="social-sidebar glassmorphism">
+                    <div class="search-user-bar">
+                        <input type="text" id="input-search-friends" placeholder="Search usernames..." class="input-glass">
+                    </div>
+                    
+                    <!-- Search Results Popup -->
+                    <div id="friends-search-results" class="search-results-overlay hidden"></div>
+                    
+                    <div class="social-tab-headers">
+                        <button class="social-tab-btn active" id="btn-tab-friends">Friends</button>
+                        <button class="social-tab-btn" id="btn-tab-requests">Requests <span id="requests-badge-count" class="badge-count hidden">0</span></button>
+                    </div>
+
+                    <!-- List entries container -->
+                    <div class="social-lists-scroller" id="social-list-target">
+                        <!-- Friend list item cards go here -->
+                    </div>
+                </div>
+
+                <!-- Active Chat Panel / Friend profile detail -->
+                <div class="social-main-stage glassmorphism" id="social-main-stage">
+                    <div class="chat-placeholder">
+                        <span class="placeholder-art">💬</span>
+                        <h3>No Conversation Active</h3>
+                        <p>Select a friend from the sidebar to open direct messages and launch typing challenges.</p>
+                    </div>
+
+                    <!-- Active direct chat layout -->
+                    <div id="direct-chat-interface" class="direct-chat-layout hidden">
+                        <div class="chat-header-bar">
+                            <div class="friend-card-heading">
+                                <img id="active-chat-avatar" src="/assets/images/avatar-default.svg" alt="Avatar" class="avatar-sm">
+                                <div class="heading-names">
+                                    <h4 id="active-chat-username">Username</h4>
+                                    <span id="active-chat-status" class="status-txt offline">offline</span>
+                                </div>
+                            </div>
+                            <div class="heading-actions">
+                                <button id="btn-invite-challenge" class="btn-primary-glow font-outfit">⚡ Typing Challenge</button>
+                            </div>
+                        </div>
+
+                        <!-- Chat message scrolling viewport -->
+                        <div class="direct-chat-scroll" id="direct-chat-messages-container"></div>
+
+                        <!-- Message editor -->
+                        <div class="direct-chat-footer">
+                            <input type="text" id="input-direct-message" placeholder="Type a message..." class="input-glass">
+                            <button id="btn-send-direct-msg" class="btn-primary">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. USER PROFILE / STATISTICS SCREEN -->
+        <section id="profile-section" class="view-section">
+            <div class="profile-header-card glassmorphism">
+                <div class="profile-main-info">
+                    <img id="profile-avatar-img" src="/assets/images/avatar-default.svg" alt="Avatar" class="avatar-large">
+                    <div class="profile-bio-details">
+                        <div class="name-badge-row">
+                            <h2 id="profile-display-name" class="font-outfit font-bold">Display Name</h2>
+                            <span id="profile-badge-slot" class="profile-badge-val">🎖️ Novice</span>
+                        </div>
+                        <p id="profile-user-bio" class="bio-text">No bio written yet.</p>
+                        <div class="profile-meta-row">
+                            <span id="profile-user-country">🌍 Global</span>
+                            <span id="profile-user-joined">📅 Joined --</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-level-card">
+                    <div class="level-circle">
+                        <span id="profile-level-txt">Lv.1</span>
+                    </div>
+                    <div class="xp-progress-bar-wrapper">
+                        <div class="xp-labels">
+                            <span id="profile-xp-current">0 XP</span>
+                            <span id="profile-xp-required">100 XP</span>
+                        </div>
+                        <div class="xp-bar-track">
+                            <div id="profile-xp-bar-fill" class="xp-bar-fill" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats dashboard grid metrics -->
+            <div class="stats-dashboard-grid">
+                
+                <div class="stat-box glassmorphism">
+                    <span class="stat-icon">⚡</span>
+                    <span class="stat-num" id="stat-high-wpm">0</span>
+                    <span class="stat-label">Highest WPM</span>
+                </div>
+                <div class="stat-box glassmorphism">
+                    <span class="stat-icon">🎯</span>
+                    <span class="stat-num" id="stat-high-acc">0.00%</span>
+                    <span class="stat-label">Highest Accuracy</span>
+                </div>
+                <div class="stat-box glassmorphism">
+                    <span class="stat-icon">🔥</span>
+                    <span class="stat-num" id="stat-streak">0</span>
+                    <span class="stat-label">Current Streak (Days)</span>
+                </div>
+                <div class="stat-box glassmorphism">
+                    <span class="stat-icon">🏆</span>
+                    <span class="stat-num" id="stat-games">0</span>
+                    <span class="stat-label">Games Played</span>
+                </div>
+                <div class="stat-box glassmorphism">
+                    <span class="stat-icon">⏱️</span>
+                    <span class="stat-num" id="stat-time">0m</span>
+                    <span class="stat-label">Typing Duration</span>
+                </div>
+                <div class="stat-box glassmorphism">
+                    <span class="stat-icon">🪙</span>
+                    <span class="stat-num" id="stat-coins">0</span>
+                    <span class="stat-label">Coins Balance</span>
+                </div>
+
+            </div>
+
+            <!-- Heatmaps and charting rows -->
+            <div class="profile-visual-analytics">
+                <div class="analytics-card glassmorphism">
+                    <h3>Finger Keyboard Heatmap</h3>
+                    <div class="heatmap-keyboard" id="visual-heatmap-keyboard">
+                        <!-- Key rows are generated programmatically in profile.js -->
+                    </div>
+                </div>
+                <div class="analytics-card glassmorphism">
+                    <h3>Recent Typing Performance Trends</h3>
+                    <canvas id="profile-wpm-trends-chart" height="150"></canvas>
+                </div>
+            </div>
+
+            <!-- Achievements & Profile settings adjustments -->
+            <div class="profile-bottom-details">
+                <div class="bottom-panel glassmorphism">
+                    <h3>Achievements Earned</h3>
+                    <div class="achievements-badges-grid" id="profile-achievements-target">
+                        <!-- Achievements lists -->
+                    </div>
+                </div>
+                <div class="bottom-panel glassmorphism">
+                    <h3>Manage Profile</h3>
+                    <div class="form-inputs-group">
+                        <div class="input-row">
+                            <label>Display Name</label>
+                            <input type="text" id="edit-display-name" class="input-glass">
+                        </div>
+                        <div class="input-row">
+                            <label>Country / Region</label>
+                            <input type="text" id="edit-country" class="input-glass">
+                        </div>
+                        <div class="input-row">
+                            <label>Biography</label>
+                            <textarea id="edit-bio" rows="2" class="textarea-glass"></textarea>
+                        </div>
+                        <div class="input-row">
+                            <label>Profile Avatar</label>
+                            <select id="edit-avatar" class="select-glass">
+                                <option value="default">Default Runner</option>
+                                <option value="ninja">Ninja Speed</option>
+                                <option value="hacker">Cyber Hacker</option>
+                                <option value="wizard">Key Wizard</option>
+                            </select>
+                        </div>
+                        <button id="btn-save-profile-edits" class="btn-primary">Save Profile Updates</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Export features -->
+            <div class="profile-actions-bar">
+                <button id="btn-export-csv" class="btn-secondary">📥 Export Stats (CSV)</button>
+                <button id="btn-print-report" class="btn-secondary">📄 Export PDF Report</button>
+                <button id="btn-auth-logout" class="btn-danger">Logout Account</button>
+            </div>
+        </section>
+
+        <!-- 9. ADMIN PANEL SECTION -->
+        <section id="admin-section" class="view-section">
+            <div class="admin-dashboard-container">
+                <h2 class="font-outfit gradient-text">Admin Control Panel</h2>
+                
+                <div class="admin-metrics-row">
+                    <div class="metric-card glassmorphism">
+                        <h4 id="admin-stat-users">00</h4>
+                        <span>Registered Users</span>
+                    </div>
+                    <div class="metric-card glassmorphism">
+                        <h4 id="admin-stat-games">00</h4>
+                        <span>Completed Runs</span>
+                    </div>
+                    <div class="metric-card glassmorphism">
+                        <h4 id="admin-stat-wpm">0.0</h4>
+                        <span>Average WPM</span>
+                    </div>
+                    <div class="metric-card glassmorphism">
+                        <h4 id="admin-stat-acc">0.0%</h4>
+                        <span>Average Accuracy</span>
+                    </div>
+                </div>
+
+                <div class="admin-grid-layout">
+                    <!-- Library creator -->
+                    <div class="admin-form-panel glassmorphism">
+                        <h3>Add Practice Content</h3>
+                        <div class="settings-group">
+                            <label>Mode Category</label>
+                            <select id="admin-content-mode" class="select-glass">
+                                <option value="quote">Quote Practice</option>
+                                <option value="code">Programming Snippet</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Fields for quotes -->
+                        <div id="admin-fields-quote">
+                            <div class="settings-group">
+                                <label>Author</label>
+                                <input type="text" id="admin-quote-author" class="input-glass">
+                            </div>
+                            <div class="settings-group">
+                                <label>Quote Text</label>
+                                <textarea id="admin-quote-text" rows="3" class="textarea-glass"></textarea>
+                            </div>
+                            <div class="settings-group">
+                                <label>Difficulty</label>
+                                <select id="admin-quote-diff" class="select-glass">
+                                    <option value="easy">Easy</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Fields for code -->
+                        <div id="admin-fields-code" class="hidden">
+                            <div class="settings-group">
+                                <label>Snippet Title</label>
+                                <input type="text" id="admin-code-title" class="input-glass">
+                            </div>
+                            <div class="settings-group">
+                                <label>Language</label>
+                                <select id="admin-code-lang" class="select-glass">
+                                    <option value="javascript">JavaScript</option>
+                                    <option value="python">Python</option>
+                                    <option value="html">HTML</option>
+                                    <option value="css">CSS</option>
+                                    <option value="sql">SQL</option>
+                                </select>
+                            </div>
+                            <div class="settings-group">
+                                <label>Source Code Block</label>
+                                <textarea id="admin-code-text" rows="5" class="textarea-glass font-fira"></textarea>
+                            </div>
+                            <div class="settings-group">
+                                <label>Difficulty</label>
+                                <select id="admin-code-diff" class="select-glass">
+                                    <option value="easy">Easy</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="hard">Hard</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button id="btn-admin-submit-content" class="btn-primary w-full">Save Snippet to Library</button>
+                    </div>
+
+                    <!-- User administration list -->
+                    <div class="admin-users-panel glassmorphism">
+                        <h3>Registered Users Management</h3>
+                        <div class="admin-users-list-wrapper">
+                            <table class="admin-users-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Level</th>
+                                        <th>Games</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-target">
+                                    <!-- Injected dynamically by admin.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- AUTHENTICATION DIALOG OVERLAY -->
+    <div id="auth-modal" class="modal-overlay hidden">
+        <div class="modal-card auth-card glassmorphism">
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login">Login</button>
+                <button class="auth-tab" id="tab-register">Register</button>
+            </div>
+            
+            <!-- Login Form view -->
+            <form id="form-login" class="auth-form">
+                <div class="input-row">
+                    <label>Username or Email</label>
+                    <input type="text" id="login-username" class="input-glass" required>
+                </div>
+                <div class="input-row">
+                    <label>Password</label>
+                    <input type="password" id="login-password" class="input-glass" required>
+                </div>
+                <div class="form-checkbox-row">
+                    <div>
+                        <input type="checkbox" id="login-remember-me">
+                        <label for="login-remember-me">Remember Me</label>
+                    </div>
+                    <a href="#" id="link-forgot-pw" class="forgot-link">Forgot Password?</a>
+                </div>
+                <button type="submit" class="btn-primary-glow w-full">Access Account</button>
+            </form>
+
+            <!-- Register Form view -->
+            <form id="form-register" class="auth-form hidden">
+                <div class="input-row">
+                    <label>Username</label>
+                    <input type="text" id="reg-username" class="input-glass" required>
+                </div>
+                <div class="input-row">
+                    <label>Email Address</label>
+                    <input type="email" id="reg-email" class="input-glass" required>
+                </div>
+                <div class="input-row">
+                    <label>Password</label>
+                    <input type="password" id="reg-password" class="input-glass" required>
+                </div>
+                <button type="submit" class="btn-primary-glow w-full">Create Account</button>
+            </form>
+
+            <!-- Recovery Form view -->
+            <form id="form-recovery" class="auth-form hidden">
+                <h3>Recover Password</h3>
+                <p class="auth-subtitle">Provide your registration email to recover your credentials.</p>
+                <div id="recovery-step-1">
+                    <div class="input-row">
+                        <label>Email Address</label>
+                        <input type="email" id="recover-email" class="input-glass" required>
+                    </div>
+                    <button type="button" id="btn-request-recovery" class="btn-primary-glow w-full">Request Code</button>
+                </div>
+                <div id="recovery-step-2" class="hidden">
+                    <div class="dev-info-banner">DEV MOCK Code: <span id="recovery-dev-code" class="text-white">000000</span></div>
+                    <div class="input-row">
+                        <label>Verification Code</label>
+                        <input type="text" id="recover-code" class="input-glass" required>
+                    </div>
+                    <div class="input-row">
+                        <label>New Password</label>
+                        <input type="password" id="recover-new-password" class="input-glass" required>
+                    </div>
+                    <button type="button" id="btn-submit-recovery" class="btn-primary-glow w-full">Reset Password</button>
+                </div>
+                <a href="#" id="link-back-login" class="forgot-link">Back to Login</a>
+            </form>
+
+            <button id="btn-auth-close" class="btn-close-modal">&times;</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOADER (Application Modular Scripts) -->
+    <script src="/config.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/game.js"></script>
+    <script src="/js/ai-race.js"></script>
+    <script src="/js/multiplayer.js"></script>
+    <script src="/js/shop.js"></script>
+    <script src="/js/social.js"></script>
+    <script src="/js/admin.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

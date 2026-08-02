@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="wizGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#bd00ff" />
+      <stop offset="100%" stop-color="#00e5ff" />
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="46" fill="#0d0a1a" stroke="url(#wizGrad)" stroke-width="4"/>
+  <!-- Wizard Hat -->
+  <path d="M50,15 L72,48 L28,48 Z" fill="#2c205c" />
+  <ellipse cx="50" cy="48" rx="26" ry="6" fill="#bd00ff" />
+  <!-- Beard -->
+  <path d="M36,54 C36,75 50,88 50,88 C50,88 64,75 64,54 Z" fill="#e2e8f0"/>
+  <!-- Star details -->
+  <path d="M50,22 L51,25 L54,25 L52,27 L53,30 L50,28 L47,30 L48,27 L46,25 L49,25 Z" fill="#ffd166"/>
+</svg>

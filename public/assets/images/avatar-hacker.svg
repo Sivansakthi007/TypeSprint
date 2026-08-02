@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="46" fill="#030906" stroke="#00ffaa" stroke-width="4"/>
+  <!-- Hood/Outline -->
+  <path d="M50,15 C30,15 22,30 22,60 L78,60 C78,30 70,15 50,15 Z" fill="#0b1712"/>
+  <!-- Glasses -->
+  <rect x="30" y="38" width="16" height="10" rx="3" fill="#00ffaa" opacity="0.8" />
+  <rect x="54" y="38" width="16" height="10" rx="3" fill="#00ffaa" opacity="0.8" />
+  <line x1="46" y1="43" x2="54" y2="43" stroke="#00ffaa" stroke-width="3" />
+  <!-- Matrix codes background -->
+  <text x="28" y="28" fill="#00ffaa" font-family="monospace" font-size="8" opacity="0.4">1</text>
+  <text x="68" y="28" fill="#00ffaa" font-family="monospace" font-size="8" opacity="0.4">0</text>
+  <text x="70" y="52" fill="#00ffaa" font-family="monospace" font-size="8" opacity="0.4">1</text>
+  <text x="24" y="52" fill="#00ffaa" font-family="monospace" font-size="8" opacity="0.4">0</text>
+</svg>
